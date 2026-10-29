@@ -1,4 +1,4 @@
-import { supabase, supabaseConfigError } from "./supabase-client.js";
+import { invokeFunction, supabase, supabaseConfigError, useVercelApi } from "./supabase-client.js";
 
 (() => {
   const DEFAULT_CONTENT = {
@@ -175,14 +175,19 @@ import { supabase, supabaseConfigError } from "./supabase-client.js";
 
   async function load() {
     try {
-      if (supabaseConfigError || !supabase) throw supabaseConfigError;
-      const { data, error } = await supabase
-        .from("site_content")
-        .select("content")
-        .eq("id", 1)
-        .maybeSingle();
-      if (error) throw error;
-      if (data?.content) currentContent = migrate(data.content);
+      if (useVercelApi) {
+        const data = await invokeFunction("site-content", { method: "GET" });
+        if (data?.content) currentContent = migrate(data.content);
+      } else {
+        if (supabaseConfigError || !supabase) throw supabaseConfigError;
+        const { data, error } = await supabase
+          .from("site_content")
+          .select("content")
+          .eq("id", 1)
+          .maybeSingle();
+        if (error) throw error;
+        if (data?.content) currentContent = migrate(data.content);
+      }
       loadError = null;
     } catch (error) {
       loadError = error;
@@ -192,6 +197,13 @@ import { supabase, supabaseConfigError } from "./supabase-client.js";
   }
 
   async function save(content) {
+    if (useVercelApi) {
+      await invokeFunction("site-content", { method: "PUT", body: { content } });
+      currentContent = migrate(content);
+      loadError = null;
+      return get();
+    }
+
     if (supabaseConfigError || !supabase) throw supabaseConfigError;
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     if (userError || !user) throw new Error("Inicia sesión como administrador para guardar los cambios.");

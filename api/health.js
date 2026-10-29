@@ -1,13 +1,25 @@
-const { jsonResponse } = require("./_lib/http");
+const { allowMethods, handleCors, handleError, jsonResponse } = require("./_lib/http");
+const { getDatabase } = require("./_lib/mongo");
 
-module.exports = function handler(request, response) {
-  if (request.method !== "GET") {
-    response.setHeader("Allow", "GET");
-    return jsonResponse(response, 405, { error: "Método no permitido." });
+module.exports = async function handler(request, response) {
+  try {
+    if (handleCors(request, response, ["GET"])) return;
+  } catch (error) {
+    return handleError(response, error, "No se pudo verificar la conexión con MongoDB.");
   }
 
-  return jsonResponse(response, 200, {
-    status: "ok",
-    service: "programstyle-vercel-api"
-  });
+  if (request.method !== "GET") {
+    return allowMethods(response, ["GET"]);
+  }
+
+  try {
+    await (await getDatabase()).command({ ping: 1 });
+    return jsonResponse(response, 200, {
+      status: "ok",
+      database: "connected",
+      service: "programstyle-vercel-api"
+    });
+  } catch (error) {
+    return handleError(response, error, "No se pudo verificar la conexión con MongoDB.");
+  }
 };

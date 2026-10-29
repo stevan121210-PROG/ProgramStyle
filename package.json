@@ -2,7 +2,7 @@
   "name": "programstyle-site",
   "version": "1.0.0",
   "private": true,
-  "description": "Sitio ProgramStyle para GitHub Pages con backend Supabase",
+  "description": "Sitio ProgramStyle con GitHub Pages, Supabase Auth, MongoDB y Vercel",
   "engines": {
     "node": ">=20.19"
   },
@@ -10,10 +10,13 @@
     "start": "vite --host 127.0.0.1",
     "dev": "vite --host 127.0.0.1",
     "build": "vite build",
-    "preview": "vite preview --host 127.0.0.1"
+    "preview": "vite preview --host 127.0.0.1",
+    "test": "node --test",
+    "migrate:mongodb": "node --env-file=.env.local scripts/migrate-supabase-to-mongodb.js"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.57.0"
+    "@supabase/supabase-js": "^2.57.0",
+    "mongodb": "^6.18.0"
   },
   "devDependencies": {
     "vite": "^8.3.4"
