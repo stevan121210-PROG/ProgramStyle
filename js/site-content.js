@@ -90,7 +90,7 @@ import { invokeFunction, supabase, supabaseConfigError, useVercelApi } from "./s
       phone: "+57 302 747 3875",
       whatsapp: "573027473875",
       emailLabel: "Correo electrónico",
-      email: "Stevan121210@gmail.com",
+      email: "programstyle1212@gmail.com",
       contactNote: "Completa el formulario para solicitar una cotización o describir tu requerimiento. Incluye el tipo de servicio si ya sabes qué plan te interesa.",
       nameLabel: "Nombre completo",
       namePlaceholder: "Tu nombre completo",
@@ -122,6 +122,9 @@ import { invokeFunction, supabase, supabaseConfigError, useVercelApi } from "./s
 
   function migrate(value) {
     const content = clone(value);
+    if (content.services.email?.trim().toLowerCase() === "stevan121210@gmail.com") {
+      content.services.email = "programstyle1212@gmail.com";
+    }
     if (!content.services.quoteButtonLabel || !content.services.quoteButtonLabel.trim()) {
       content.services.quoteButtonLabel = DEFAULT_CONTENT.services.quoteButtonLabel;
     }

@@ -54,9 +54,12 @@ Deno.serve(async (request: Request) => {
           { name: "Mantenimiento Web", price: "$350.000 COP", features: ["Mantenimiento web", "10% de descuento si ProgramStyle desarrolló el sitio elegible"] }
         ],
         phone: "+57 302 747 3875",
-        email: "Stevan121210@gmail.com"
+        email: "programstyle1212@gmail.com"
       }
     };
+    if (content.services?.email?.trim().toLowerCase() === "stevan121210@gmail.com") {
+      content.services.email = "programstyle1212@gmail.com";
+    }
     const systemPrompt = [
       "Eres el asistente conversacional de ProgramStyle, un emprendimiento de desarrollo web de Colombia.",
       "Responde en español natural, cálido, creativo y concreto; personaliza tus recomendaciones con el contexto del negocio.",

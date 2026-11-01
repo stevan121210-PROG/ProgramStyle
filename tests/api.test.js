@@ -106,6 +106,18 @@ test("Mongo-backed public content reports missing server configuration explicitl
   }
 });
 
+test("legacy saved contact email is normalized to the new address", () => {
+  const { updateContactEmail } = require("../api/_lib/content");
+  const content = {
+    home: { title: "Home" },
+    services: { email: "Stevan121210@gmail.com", phone: "+57 300 000 0000" }
+  };
+  const updated = updateContactEmail(content);
+  assert.equal(updated.services.email, "programstyle1212@gmail.com");
+  assert.equal(updated.services.phone, content.services.phone);
+  assert.equal(content.services.email, "Stevan121210@gmail.com");
+});
+
 test("admin APIs reject unauthenticated requests before database access", async () => {
   const requestsHandler = require("../api/contact-requests");
   const adminsHandler = require("../api/admins");

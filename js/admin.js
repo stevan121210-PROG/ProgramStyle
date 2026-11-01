@@ -192,7 +192,7 @@ const ADMIN_HELP_TOPICS = [
     id: "contact",
     keywords: ["contacto", "contactar", "whatsapp", "correo", "email", "formulario"],
     responses: [
-      "Puedes contactar a ProgramStyle desde “Servicios”: usa el formulario o escribe por WhatsApp al +57 302 747 3875 o al correo Stevan121210@gmail.com. Cuéntales qué tipo de sitio necesitas y qué quieres incluir.",
+      "Puedes contactar a ProgramStyle desde “Servicios”: usa el formulario o escribe por WhatsApp al +57 302 747 3875 o al correo programstyle1212@gmail.com. Cuéntales qué tipo de sitio necesitas y qué quieres incluir.",
       "Para pedir una cotización, completa el formulario de Servicios con tu nombre, correo y mensaje; el teléfono y servicio son opcionales. Al enviar, la solicitud se registra para que el administrador pueda revisarla. También puedes escribir directamente por WhatsApp o correo."
     ]
   },

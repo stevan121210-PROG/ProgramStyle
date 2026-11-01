@@ -1,5 +1,6 @@
 const { requireSiteAdmin } = require("./_lib/auth");
 const { allowMethods, handleCors, handleError, jsonResponse, readJsonBody } = require("./_lib/http");
+const { updateContactEmail } = require("./_lib/content");
 const { getDatabase } = require("./_lib/mongo");
 
 module.exports = async function handler(request, response) {
@@ -8,7 +9,7 @@ module.exports = async function handler(request, response) {
     if (request.method === "GET") {
       const database = await getDatabase();
       const record = await database.collection("site_content").findOne({ _id: "current" });
-      return jsonResponse(response, 200, { content: record?.content || null });
+      return jsonResponse(response, 200, { content: updateContactEmail(record?.content) || null });
     }
 
     if (request.method === "PUT") {
