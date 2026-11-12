@@ -1,30 +1,40 @@
 # ProgramStyle
 
-Sitio multipágina de ProgramStyle, publicado en GitHub Pages. Supabase gestiona la autenticación y los permisos administrativos; una API serverless en Vercel conecta de forma segura con MongoDB Atlas para el contenido, las solicitudes y los límites de uso. GitHub Pages sigue siendo el alojamiento oficial del sitio.
+Sitio multipágina de ProgramStyle configurado para desplegarse íntegramente en Vercel. Vercel sirve el frontend y las funciones de `api/`; Supabase gestiona autenticación y permisos de administración, y MongoDB Atlas almacena el contenido, las solicitudes y los límites de uso. El navegador nunca se conecta directamente a MongoDB.
+
+## Desplegar en Vercel
+
+1. Importa este repositorio en Vercel y deja la raíz del proyecto en `/`. Vercel lee `vercel.json`: ejecuta `npm run build:vercel`, publica `dist` y expone las funciones de `api/` en `/api/*`.
+2. En **Settings → Environment Variables**, agrega para **Production** y, si vas a probar previews, también para **Preview**:
+   - `VITE_SUPABASE_URL`: URL raíz del proyecto Supabase.
+   - `VITE_SUPABASE_ANON_KEY`: clave pública/anon de Supabase. Estas dos variables se incorporan al frontend; nunca pongas aquí una clave privada.
+   - `SUPABASE_URL`: URL raíz del proyecto Supabase para el servidor.
+   - `SUPABASE_SERVICE_ROLE_KEY`: clave privada de servidor para validar sesiones y permisos.
+   - `MONGODB_URI`: URI privada de MongoDB Atlas.
+   - `MONGODB_DB`: nombre de base de datos (opcional; predeterminado `programstyle`).
+   - `OPENAI_API_KEY`: clave privada para activar los asistentes de IA.
+   - `ALLOWED_ORIGINS`: orígenes externos exactos, separados por coma y sin rutas. Solo hace falta si otro dominio distinto al del deployment llamará a la API; las peticiones del mismo dominio Vercel se permiten automáticamente.
+3. En **Deployments**, crea o espera el deployment de Production. Comprueba `https://TU_DOMINIO.vercel.app/`, `/servicios.html`, `/admin.html` y `/api/health`.
+4. En Supabase, abre **Authentication → URL Configuration** y establece el dominio Vercel de Production como **Site URL**. Agrega `https://TU_DOMINIO.vercel.app/admin.html` a **Redirect URLs**. Agrega las URL de previews solo si vas a iniciar sesión desde ellas.
+5. Si cambiaste variables de entorno después del primer despliegue, vuelve a desplegar para que el frontend se compile con las variables públicas actualizadas.
+6. Después de validar Vercel, desactiva GitHub Pages en **GitHub → Settings → Pages** para que el sitio antiguo no siga sirviéndose por separado.
+
+La aplicación es multipágina y conserva rutas normales para Inicio, Servicios y Admin. El build de Vercel usa el modo `vercel`, que conecta el frontend con las funciones `/api/*` del mismo deployment; no necesita `VITE_API_BASE_URL` ni una URL separada para la API.
 
 ## Desarrollo local
 
 Requisitos: Node.js 20.19 o posterior.
 
-1. Copia `.env.example` como `.env.local`.
-2. Completa `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` con los valores públicos del proyecto Supabase. No pongas claves privadas en variables `VITE_*`.
-3. Instala y ejecuta:
-
-   ```powershell
-   npm.cmd ci
-   npm.cmd start
-   ```
-
-4. Abre `http://127.0.0.1:5173`. Para compilar la web estática localmente, ejecuta `npm.cmd run build`; los archivos resultantes quedan en `dist`.
-
-Sin credenciales, Vite puede compilar y mostrar el contenido predeterminado, pero la autenticación, el guardado compartido, los chats y el formulario que registra solicitudes no funcionarán.
-Para probar la API y MongoDB localmente, usa `npx vercel dev` con las variables del backend en `.env.local`. Para usar la web local contra la API desplegada, define `VITE_API_BASE_URL` con el origen Vercel.
+1. Instala dependencias con `npm.cmd ci`.
+2. Crea `.env.local` a partir de `.env.example` y completa las variables de Supabase y del servidor con valores privados locales. No subas `.env.local`.
+3. Ejecuta `npx vercel dev` y abre la URL local que indica Vercel. Para probar el backend completo, usa ese comando en lugar de `npm start`, ya que Vite por sí solo no ejecuta las funciones de `api/`.
+4. `npm.cmd test` ejecuta las pruebas; `npm.cmd run build:vercel` reproduce el build de producción y `npm.cmd run build` comprueba el build genérico de Vite.
 
 ## Configurar Supabase
 
-1. Crea un proyecto Supabase y ejecuta [`supabase/schema.sql`](./supabase/schema.sql) desde **SQL Editor**. La tabla `admin_users` conserva los permisos administrativos. Las tablas `site_content`, `contact_requests` y `api_rate_limits` se conservan para el backend anterior o una reversión; el flujo nuevo en GitHub Pages las lee desde MongoDB mediante la API Vercel.
-2. En **Authentication → Users**, crea el primer usuario con correo y contraseña. Desactiva el registro público de usuarios.
-3. Autoriza el usuario inicial desde SQL Editor, sustituyendo el correo:
+1. Crea un proyecto Supabase y ejecuta [`supabase/schema.sql`](./supabase/schema.sql) desde **SQL Editor**.
+2. En **Authentication → Users**, crea la primera cuenta y desactiva el registro público.
+3. Autoriza la cuenta inicial desde SQL Editor, sustituyendo el correo:
 
    ```sql
    insert into public.admin_users (id, email)
@@ -34,75 +44,16 @@ Para probar la API y MongoDB localmente, usa `npx vercel dev` con las variables 
    on conflict (id) do nothing;
    ```
 
-4. En **Authentication → URL Configuration**, establece como **Site URL** la dirección raíz `https://TU_USUARIO.github.io/TU_REPOSITORIO/` y agrega estas **Redirect URLs**:
-   - `https://TU_USUARIO.github.io/TU_REPOSITORIO/admin.html`
-   - `http://127.0.0.1:5173/admin.html`
-   - `http://localhost:5173/admin.html`
+La tabla `admin_users` mantiene los permisos administrativos. Las tablas `site_content`, `contact_requests` y `api_rate_limits` pertenecen al backend anterior y se conservan para una posible reversión; el flujo activo usa MongoDB mediante la API de Vercel.
 
-   Para ProgramStyle publicado en este repositorio, la URL de Admin es `https://stevan121210-prog.github.io/Proyecto-final-Jovenes-CreaTIvos/admin.html`. El panel tiene un enlace de recuperación y permite establecer una contraseña nueva después de verificar el enlace recibido por correo.
+## MongoDB y migración de datos
 
-5. Si necesitas mantener o desplegar el backend Edge Functions anterior para reversión, instala la CLI de Supabase, autentícate y vincula el proyecto:
+Configura en MongoDB Atlas acceso de red para Vercel y un usuario con permisos limitados a la base de datos de la aplicación. La API valida su conexión en `/api/health` y solo devuelve estado correcto cuando MongoDB responde.
 
-   ```powershell
-   npx supabase login
-   npx supabase link --project-ref TU_PROJECT_REF
-   ```
+Para migrar contenido y solicitudes existentes, configura `MONGODB_URI` y `SUPABASE_SERVICE_ROLE_KEY` en `.env.local` y ejecuta `npm.cmd run migrate:mongodb`. La migración no borra los datos de Supabase; las cuentas administrativas no se migran y los límites temporales se reinician.
 
-6. Para el backend anterior de Supabase, `ALLOWED_ORIGINS` debe contener los orígenes separados por coma, sin rutas. Incluye el dominio `https://TU_USUARIO.github.io` y los orígenes locales `http://127.0.0.1:5173,http://localhost:5173`.
+`SUPABASE_SERVICE_ROLE_KEY`, `MONGODB_URI` y `OPENAI_API_KEY` son secretos de servidor: configúralos únicamente como variables privadas de Vercel. No les asignes el prefijo `VITE_`.
 
-   ```powershell
-   npx supabase secrets set OPENAI_API_KEY=TU_CLAVE_OPENAI ALLOWED_ORIGINS="https://TU_USUARIO.github.io,http://127.0.0.1:5173,http://localhost:5173"
-   ```
+## Publicación
 
-   Supabase proporciona `SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY` a las funciones. Nunca publiques la clave de OpenAI ni la clave service role en el frontend o en GitHub Pages.
-
-7. Despliega cada función Edge anterior desde la raíz del repositorio si se necesita reversión:
-
-   ```powershell
-   npx supabase functions deploy ai-chat
-   npx supabase functions deploy admins
-   npx supabase functions deploy contact-request
-   npx supabase functions deploy contact-requests
-   ```
-
-   [`supabase/config.toml`](./supabase/config.toml) desactiva la verificación JWT automática del gateway; cada función valida explícitamente los tokens y permisos de Admin cuando corresponde.
-
-## Publicar en GitHub Pages
-
-1. Sube el repositorio a GitHub en la rama `main`.
-2. En **Settings → Secrets and variables → Actions → Secrets**, crea:
-   - `VITE_SUPABASE_URL`: URL raíz del proyecto Supabase, sin `/rest/v1/`.
-   - `VITE_SUPABASE_ANON_KEY`: clave publicable/anon del proyecto. Es pública y se usa para conectar el navegador.
-3. En **Settings → Secrets and variables → Actions → Variables**, crea `VITE_API_BASE_URL` con solo el origen público de la API Vercel, por ejemplo `https://TU_API.vercel.app` (sin `/api` ni barra final).
-4. En **Settings → Pages**, selecciona **GitHub Actions** como origen.
-5. Cada push a `main` construye el sitio con Vite y lo despliega. También puedes iniciarlo desde **Actions → Deploy ProgramStyle to GitHub Pages → Run workflow**.
-
-El workflow configura la ruta base tanto para un repositorio de proyecto (`https://TU_USUARIO.github.io/NOMBRE_REPO/`) como para el repositorio principal de usuario (`https://TU_USUARIO.github.io/`).
-
-## Vercel y MongoDB Atlas
-
-Vercel aloja únicamente la API serverless definida en `api/`; el sitio público continúa desplegándose desde GitHub Pages. La API usa MongoDB Atlas para los datos y Supabase Auth/`admin_users` para autenticar y autorizar operaciones administrativas. El navegador nunca se conecta directamente a MongoDB.
-
-1. Crea una base de datos y un usuario de aplicación en MongoDB Atlas. Guarda la URI de conexión en un lugar privado.
-2. Importa el repositorio en Vercel con la raíz del proyecto y configura para Production:
-   - `SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY` para validar sesiones y permisos. Son secretos de servidor y nunca deben tener prefijo `VITE_`.
-   - `MONGODB_URI` y, opcionalmente, `MONGODB_DB=programstyle`.
-   - `OPENAI_API_KEY` para activar los asistentes.
-   - `ALLOWED_ORIGINS` con orígenes exactos separados por coma, sin rutas: `https://stevan121210-prog.github.io,http://localhost:5173,http://127.0.0.1:5173`. Añade el dominio Vercel solo si también abrirás el sitio desde allí.
-3. Configura en MongoDB Atlas el acceso de red necesario para Vercel y usa un usuario con privilegios limitados a la base de datos de la aplicación.
-4. El build y el directorio `dist` ya están declarados en `vercel.json`. Comprueba `/api/health`; realiza un ping real a MongoDB y devuelve 200 solo cuando la conexión funciona.
-5. Copia el origen del deployment Vercel de Production a la variable GitHub `VITE_API_BASE_URL`. El workflow de Pages ya compila el frontend con `VITE_DATA_BACKEND=vercel`.
-
-Configura `ALLOWED_ORIGINS` en Vercel para que admita el origen real de GitHub Pages. Si este valor falta o el dominio no coincide exactamente, el navegador bloqueará las peticiones CORS. La API maneja solicitudes `OPTIONS` y permite solo los orígenes declarados.
-
-Para ejecutar la migración única de contenido y solicitudes existentes, copia `.env.example` como `.env.local`, añade `MONGODB_URI` y `SUPABASE_SERVICE_ROLE_KEY` válidos (sin compartirlos ni subirlos) y ejecuta `npm.cmd run migrate:mongodb`. El proceso no borra los datos de Supabase. Migra antes de desplegar el cambio del workflow; los límites temporales se reinician y las cuentas/permisos administrativos no se migran.
-
-`MONGODB_URI`, `SUPABASE_SERVICE_ROLE_KEY` y `OPENAI_API_KEY` se configuran solo en Vercel como secretos de servidor. No deben tener prefijo `VITE_` ni exponerse en el frontend. `.env.local` queda ignorado por Git.
-
-## Funcionalidad y límites
-
-- GitHub Pages sirve el frontend; la API Vercel almacena contenido, solicitudes y límites de uso en MongoDB.
-- Las cuentas autorizadas revisan las solicitudes en Admin y pueden marcarlas como atendidas; los permisos y credenciales siguen en Supabase.
-- Hasta que exista contenido guardado en la base activa, la web y la IA usan el contenido predeterminado incorporado.
-- Los cambios de contenido y de cuentas administrativas requieren confirmación en el panel. La IA explica y prepara, pero no ejecuta ni publica acciones por sí sola.
-- Para validar el proyecto ejecuta `npm.cmd test` y `npm.cmd run build`. La integración real requiere configurar el backend correspondiente, Supabase Auth y, para Vercel, MongoDB Atlas y una clave válida de OpenAI.
+Cada push a `main` inicia un deployment de Vercel cuando el repositorio está conectado al proyecto. GitHub Pages ya no es el destino de publicación. Para verificar localmente ejecuta `npm.cmd test` y `npm.cmd run build:vercel`.

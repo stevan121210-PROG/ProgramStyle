@@ -34,19 +34,37 @@ function readJsonBody(request) {
 function handleCors(request, response, methods) {
   const origin = request.headers.origin;
   if (origin) {
+    const requestHost = String(request.headers.host || "").toLowerCase();
+    const forwardedProtocol = String(request.headers["x-forwarded-proto"] || request.protocol || "")
+      .split(",")[0]
+      .trim()
+      .toLowerCase();
+    let isSameOrigin = false;
+    if (requestHost && forwardedProtocol) {
+      try {
+        const originUrl = new URL(origin);
+        isSameOrigin = originUrl.host.toLowerCase() === requestHost
+          && originUrl.protocol === `${forwardedProtocol.replace(/:$/, "")}:`;
+      } catch {
+        isSameOrigin = false;
+      }
+    }
+
     const allowedOrigins = (process.env.ALLOWED_ORIGINS || "")
       .split(",")
       .map((value) => value.trim())
       .filter(Boolean);
-    if (!allowedOrigins.includes(origin)) {
+    if (!isSameOrigin && !allowedOrigins.includes(origin)) {
       throw new HttpError(403, "Este origen no está autorizado.");
     }
 
-    response.setHeader("Access-Control-Allow-Origin", origin);
-    response.setHeader("Access-Control-Allow-Headers", "authorization, content-type, accept");
-    response.setHeader("Access-Control-Allow-Methods", [...methods, "OPTIONS"].join(", "));
-    response.setHeader("Access-Control-Max-Age", "86400");
-    response.setHeader("Vary", "Origin");
+    if (!isSameOrigin) {
+      response.setHeader("Access-Control-Allow-Origin", origin);
+      response.setHeader("Access-Control-Allow-Headers", "authorization, content-type, accept");
+      response.setHeader("Access-Control-Allow-Methods", [...methods, "OPTIONS"].join(", "));
+      response.setHeader("Access-Control-Max-Age", "86400");
+      response.setHeader("Vary", "Origin");
+    }
   }
 
   if (request.method === "OPTIONS") {

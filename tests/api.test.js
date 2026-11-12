@@ -66,18 +66,18 @@ test("contact API rejects unsupported methods, invalid input, and foreign origin
 test("API CORS preflight allows only explicitly configured origins", async () => {
   const handler = require("../api/contact-request");
   const previousOrigins = process.env.ALLOWED_ORIGINS;
-  process.env.ALLOWED_ORIGINS = "https://stevan121210-prog.github.io,http://localhost:5173";
+  process.env.ALLOWED_ORIGINS = "https://public-site.example,http://localhost:5173";
   try {
     const allowed = await invoke(handler, {
       method: "OPTIONS",
       headers: {
-        origin: "https://stevan121210-prog.github.io",
+        origin: "https://public-site.example",
         "access-control-request-method": "POST",
         "access-control-request-headers": "authorization,content-type"
       }
     });
     assert.equal(allowed.statusCode, 204);
-    assert.equal(allowed.headers["Access-Control-Allow-Origin"], "https://stevan121210-prog.github.io");
+    assert.equal(allowed.headers["Access-Control-Allow-Origin"], "https://public-site.example");
     assert.match(allowed.headers["Access-Control-Allow-Methods"], /POST/);
 
     const blocked = await invoke(handler, {
@@ -89,6 +89,28 @@ test("API CORS preflight allows only explicitly configured origins", async () =>
   } finally {
     if (previousOrigins === undefined) delete process.env.ALLOWED_ORIGINS;
     else process.env.ALLOWED_ORIGINS = previousOrigins;
+  }
+});
+
+test("API accepts requests from its own Vercel deployment origin", async () => {
+  const handler = require("../api/contact-request");
+  const previousUri = process.env.MONGODB_URI;
+  delete process.env.MONGODB_URI;
+  try {
+    const response = await invoke(handler, {
+      method: "POST",
+      headers: {
+        origin: "https://programstyle.vercel.app",
+        host: "programstyle.vercel.app",
+        "x-forwarded-proto": "https"
+      },
+      body: { name: "", email: "bad", message: "" }
+    });
+    assert.equal(response.statusCode, 400);
+    assert.equal(response.headers["Access-Control-Allow-Origin"], undefined);
+  } finally {
+    if (previousUri === undefined) delete process.env.MONGODB_URI;
+    else process.env.MONGODB_URI = previousUri;
   }
 });
 

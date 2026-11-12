@@ -3,8 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-export const useVercelApi = import.meta.env.VITE_DATA_BACKEND === "vercel";
-const vercelApiBaseUrl = import.meta.env.VITE_API_BASE_URL?.trim().replace(/\/+$/, "");
+export const useVercelApi = import.meta.env.MODE === "vercel" || import.meta.env.VITE_DATA_BACKEND === "vercel";
 
 export const supabaseConfigError = !supabaseUrl || !supabaseAnonKey
   ? new Error("Configura VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY para conectar el sitio con Supabase.")
@@ -36,11 +35,7 @@ export async function invokeFunction(functionName, options = {}) {
       requestOptions.body = JSON.stringify(options.body);
     }
 
-    if (!vercelApiBaseUrl && window.location.hostname.endsWith(".github.io")) {
-      throw new Error("Configura VITE_API_BASE_URL en GitHub Actions para conectar GitHub Pages con la API.");
-    }
-    const apiBaseUrl = vercelApiBaseUrl || window.location.origin;
-    const response = await fetch(`${apiBaseUrl}/api/${encodeURIComponent(functionName)}`, requestOptions);
+    const response = await fetch(`${window.location.origin}/api/${encodeURIComponent(functionName)}`, requestOptions);
     const responseText = await response.text();
     let data;
     try {
