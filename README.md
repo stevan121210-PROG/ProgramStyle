@@ -46,6 +46,8 @@ Requisitos: Node.js 20.19 o posterior.
 
 La tabla `admin_users` mantiene los permisos administrativos. Las tablas `site_content`, `contact_requests` y `api_rate_limits` pertenecen al backend anterior y se conservan para una posible reversión; el flujo activo usa MongoDB mediante la API de Vercel.
 
+El panel no aparece enlazado desde las páginas públicas y su página solicita inicio de sesión. Solo las cuentas autorizadas en `admin_users` pueden usar el panel y sus API; compartir u ocultar la URL no sustituye esa autorización. La página también indica a los buscadores que no la indexen.
+
 ## MongoDB y migración de datos
 
 Configura en MongoDB Atlas acceso de red para Vercel y un usuario con permisos limitados a la base de datos de la aplicación. La API valida su conexión en `/api/health` y solo devuelve estado correcto cuando MongoDB responde.

@@ -1,5 +1,7 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
+const fs = require("node:fs");
+const path = require("node:path");
 
 function createResponse() {
   return {
@@ -147,6 +149,16 @@ test("admin APIs reject unauthenticated requests before database access", async 
   const adminsResponse = await invoke(adminsHandler, { method: "GET" });
   assert.equal(requestsResponse.statusCode, 401);
   assert.equal(adminsResponse.statusCode, 401);
+});
+
+test("public pages do not link to the admin panel and the admin page is excluded from indexing", () => {
+  for (const page of ["index.html", "servicios.html"]) {
+    const html = fs.readFileSync(path.join(__dirname, "..", "html", page), "utf8");
+    assert.doesNotMatch(html, /href=["'](?:\.\/)?admin\.html["']/i);
+  }
+
+  const adminPage = fs.readFileSync(path.join(__dirname, "..", "html", "admin.html"), "utf8");
+  assert.match(adminPage, /<meta\s+name=["']robots["']\s+content=["']noindex,\s*nofollow["']/i);
 });
 
 test("AI API rejects unsupported methods and malformed requests before database access", async () => {

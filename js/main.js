@@ -8,7 +8,6 @@ ProgramStyleContent.load().then((content) => {
   document.getElementById("home-title").textContent = homeContent.title;
   document.getElementById("home-description").textContent = homeContent.description;
   document.getElementById("home-services-button").textContent = homeContent.servicesButton;
-  document.getElementById("home-admin-button").textContent = homeContent.adminButton;
   document.getElementById("home-projects-label").textContent = homeContent.projectsLabel;
   document.getElementById("home-projects-title").textContent = homeContent.projectsTitle;
   document.getElementById("home-projects-description").textContent = homeContent.projectsDescription;
