@@ -69,7 +69,7 @@ import { invokeFunction, supabase, supabaseConfigError, useVercelApi } from "./s
           name: "Mantenimiento Web",
           price: "$350.000 COP",
           features: [
-            "Mantenimiento de páginas web desarrolladas por ProgramStyle",
+            "Mantenimiento de páginas web",
             "10% de descuento en el mantenimiento de una Landing Page, Sitio Corporativo o E-commerce creado por nosotros",
             "Alcance y frecuencia del mantenimiento definidos según las necesidades del sitio"
           ],
