@@ -24,6 +24,13 @@ import { invokeFunction, supabase, supabaseConfigError, useVercelApi } from "./s
           url: "https://smphcompresores.vercel.app/",
           image: "../assets/img/SMPH_Industrial_referencia.png",
           alt: "SMPH Compresores proyecto web"
+        },
+        {
+          name: "Tu Pilar Asesorías y Soluciones",
+          description: "Sitio web de acompañamiento administrativo, laboral y familiar.",
+          url: "https://tupilaracompanamiento.vercel.app/",
+          image: "../assets/img/Tupilar_referencia.png",
+          alt: "Tu Pilar Asesorías y Soluciones proyecto web"
         }
       ]
     },

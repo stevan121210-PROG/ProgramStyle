@@ -104,7 +104,7 @@ const ADMIN_HELP_TOPICS = [
     keywords: ["proyectos", "casos de exito", "shinsushii", "smph", "compresores", "trabajos realizados", "portafolio", "ejemplos"],
     responses: [
       "En “Inicio”, baja hasta “Proyectos realizados”. Ahí aparecen Shinsushii, una landing para una marca de sushi, y SMPH Compresores, un sitio corporativo industrial; puedes abrir cada proyecto desde su tarjeta.",
-      "La página “Inicio” incluye dos proyectos recientes: Shinsushii y SMPH Compresores. Las tarjetas llevan a sus sitios publicados, así que sirven para ver ejemplos reales del trabajo."
+      "La página “Inicio” incluye proyectos recientes como Shinsushii, SMPH Compresores y Tu Pilar Asesorías y Soluciones. Las tarjetas llevan a sus sitios publicados, así que sirven para ver ejemplos reales del trabajo."
     ]
   },
   {
