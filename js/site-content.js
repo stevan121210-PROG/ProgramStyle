@@ -27,7 +27,7 @@ import { invokeFunction, supabase, supabaseConfigError, useVercelApi } from "./s
         },
         {
           name: "Tu Pilar Asesorías y Soluciones",
-          description: "Sitio web de acompañamiento administrativo, laboral y familiar.",
+          description: "App web de acompañamiento administrativo, laboral y familiar.",
           url: "https://tupilaracompanamiento.vercel.app/",
           image: "../assets/img/Tupilar_referencia.png",
           alt: "Tu Pilar Asesorías y Soluciones proyecto web"
